@@ -133,8 +133,8 @@ end
 
 -- Setup function to initialize the plugin
 function M.setup()
-    vim.api.nvim_create_user_command('FzfDirCopy', M.select_and_copy, { desc = "Select files/directories and copy text content to clipboard" })
-    vim.notify("FzfDirCopy: Command registered", vim.log.levels.INFO)
+    vim.api.nvim_create_user_command('Ctx', M.select_and_copy, { desc = "Select files/directories and copy text content to clipboard" })
+    vim.notify("Ctx: Command registered", vim.log.levels.INFO)
 end
 
 return M
