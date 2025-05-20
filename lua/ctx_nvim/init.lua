@@ -10,12 +10,25 @@ local skip_extensions = {
     'zip', 'tar', 'gz', 'bin', 'exe', 'o'
 }
 
+-- Common text file extensions as fallback
+local text_extensions = {
+    'txt', 'md', 'lua', 'py', 'js', 'ts', 'json',
+    'yaml', 'yml', 'sh', 'c', 'cpp', 'h', 'java', 'go'
+}
+
 -- Function to check if file is text
 local function is_text_file(filename)
     -- Check if file has a skippable extension
     for _, ext in ipairs(skip_extensions) do
         if filename:match('%.' .. ext .. '$') then
+            vim.notify("Skipping non-text file: " .. filename, vim.log.levels.DEBUG)
             return false
+        end
+    end
+    -- Check if file has a known text extension
+    for _, ext in ipairs(text_extensions) do
+        if filename:match('%.' .. ext .. '$') then
+            return true
         end
     end
     -- Use plenary to check if file is readable text
@@ -24,9 +37,14 @@ local function is_text_file(filename)
         if stat and stat.type == 'file' then
             local cmd = string.format("file %q", filename)
             local output = vim.fn.system(cmd)
-            return output:match('text') ~= nil
+            local is_text = output:match('text') ~= nil
+            if not is_text then
+                vim.notify("File not identified as text by `file` command: " .. filename .. " (" .. output .. ")", vim.log.levels.DEBUG)
+            end
+            return is_text
         end
     end
+    vim.notify("Unable to check file type (plenary failed or file not found): " .. filename, vim.log.levels.DEBUG)
     return false
 end
 
@@ -39,6 +57,7 @@ local function process_file(file, output)
         local content = Path:new(file):read()
         table.insert(output, content)
         table.insert(output, "\n")
+        vim.notify("Processed file: " .. relative_path, vim.log.levels.DEBUG)
     end
 end
 
@@ -48,6 +67,7 @@ local function process_directory(dir, output)
     local scandir = require('plenary.scandir')
 
     local files = scandir.scan_dir(dir, { hidden = false, add_dirs = false })
+    vim.notify("Scanning directory: " .. dir .. " (" .. #files .. " files found)", vim.log.levels.DEBUG)
 
     for _, file in ipairs(files) do
         local relative_path = file:sub(#dir + 2) -- Remove dir prefix
@@ -56,6 +76,7 @@ local function process_directory(dir, output)
             local content = Path:new(file):read()
             table.insert(output, content)
             table.insert(output, "\n")
+            vim.notify("Processed file: " .. relative_path, vim.log.levels.DEBUG)
         end
     end
 end
@@ -134,7 +155,6 @@ end
 -- Setup function to initialize the plugin
 function M.setup()
     vim.api.nvim_create_user_command('Ctx', M.select_and_copy, { desc = "Select files/directories and copy text content to clipboard" })
-    vim.notify("Ctx: Command registered", vim.log.levels.INFO)
 end
 
 return M
