@@ -98,7 +98,6 @@ function M.select_and_copy()
                 end
 
                 local output = {}
-                vim.notify("Selected files:\n" .. table.concat(selected, "\n"), vim.log.levels.INFO)
 
                 for _, file in ipairs(selected) do
                     process_file(file, output)
