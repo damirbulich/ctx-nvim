@@ -2,8 +2,6 @@ local M = {}
 
 -- Check if fzf-lua is available
 local has_fzf, fzf = pcall(require, 'fzf-lua')
-
--- Check if plenary is available for file operations
 local has_plenary, plenary = pcall(require, 'plenary')
 
 -- List of file extensions to skip
@@ -74,7 +72,7 @@ local function copy_to_clipboard(content)
     end
 
     if clipboard_cmd then
-        vim.fn.system(clipboard_cmd, content)
+        vim.fn.system(clipboard_cmd, table.concat(content, "\n"))
         vim.notify(string.format("Done! Text copied to clipboard. Total lines: %d", #content))
     else
         vim.notify("Error: No clipboard tool found (install xclip, wl-copy, or pbcopy)", vim.log.levels.ERROR)
@@ -133,7 +131,10 @@ function M.select_and_copy()
     })
 end
 
--- Setup command
-vim.api.nvim_create_user_command('FzfDirCopy', M.select_and_copy, {})
+-- Setup function to initialize the plugin
+function M.setup()
+    vim.api.nvim_create_user_command('FzfDirCopy', M.select_and_copy, { desc = "Select files/directories and copy text content to clipboard" })
+    vim.notify("FzfDirCopy: Command registered", vim.log.levels.INFO)
+end
 
 return M
