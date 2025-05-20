@@ -1,10 +1,13 @@
 local M = {}
 
+-- Plugin version for debugging
+local PLUGIN_VERSION = "0.2.0"
+
 -- Check if fzf-lua is available
 local has_fzf, fzf = pcall(require, 'fzf-lua')
 local has_plenary, plenary = pcall(require, 'plenary')
 
--- Function to clean file path (remove special characters like  and non-ASCII)
+-- Function to clean file path (remove special characters like  and ./)
 local function clean_path(path)
     -- Remove non-ASCII characters, special characters, and trim whitespace
     local cleaned = path:gsub("[^%w%/%-%.%_]", ""):gsub("^%s+", ""):gsub("%s+$", "")
@@ -18,7 +21,7 @@ end
 -- Function to process a single file
 local function process_file(file, output)
     local Path = require('plenary.path')
-    -- Clean the file path to remove special characters
+    -- Clean the file path
     local cleaned_path = clean_path(file)
     vim.notify("Cleaned path: " .. cleaned_path, vim.log.levels.DEBUG)
     
@@ -35,18 +38,8 @@ local function process_file(file, output)
     vim.notify("File exists check: " .. tostring(exists) .. " for " .. absolute_path, vim.log.levels.DEBUG)
     
     if not exists then
-        -- Fallback: Try constructing absolute path directly from cwd
-        local fallback_path = vim.fn.getcwd() .. "/" .. cleaned_path
-        vim.notify("Trying fallback path: " .. fallback_path, vim.log.levels.DEBUG)
-        path = Path:new(fallback_path)
-        exists = path:exists()
-        vim.notify("Fallback exists check: " .. tostring(exists) .. " for " .. fallback_path, vim.log.levels.DEBUG)
-        if not exists then
-            vim.notify("File does not exist or is not accessible: " .. absolute_path .. " or " .. fallback_path, vim.log.levels.DEBUG)
-            return
-        end
-        absolute_path = fallback_path
-        relative_path = cleaned_path
+        vim.notify("File does not exist or is not accessible: " .. absolute_path, vim.log.levels.DEBUG)
+        return
     end
     
     local content = path:read()
@@ -93,6 +86,7 @@ function M.select_and_copy()
         return
     end
 
+    vim.notify("ctx-nvim version: " .. PLUGIN_VERSION, vim.log.levels.INFO)
     fzf.files({
         prompt = "Select files to process (TAB to toggle, Enter to confirm)> ",
         cwd = vim.fn.getcwd(),
@@ -129,7 +123,7 @@ end
 -- Setup function to initialize the plugin
 function M.setup()
     vim.api.nvim_create_user_command('Ctx', M.select_and_copy, { desc = "Select files and copy text content to clipboard" })
-    vim.notify("Ctx: Command registered", vim.log.levels.INFO)
+    vim.notify("Ctx: Command registered (version " .. PLUGIN_VERSION .. ")", vim.log.levels.INFO)
 end
 
 return M
