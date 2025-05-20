@@ -4,10 +4,15 @@ local M = {}
 local has_fzf, fzf = pcall(require, 'fzf-lua')
 local has_plenary, plenary = pcall(require, 'plenary')
 
--- Function to clean file path (remove special characters like )
+-- Function to clean file path (remove special characters like  and non-ASCII)
 local function clean_path(path)
-    -- Remove special characters and trim whitespace
-    return path:gsub("[^%w%/%-%.%_]", ""):gsub("^%s+", ""):gsub("%s+$", "")
+    -- Remove non-ASCII characters, special characters, and trim whitespace
+    local cleaned = path:gsub("[^%w%/%-%.%_]", ""):gsub("^%s+", ""):gsub("%s+$", "")
+    -- Remove './' prefix if present
+    if cleaned:sub(1, 2) == "./" then
+        cleaned = cleaned:sub(3)
+    end
+    return cleaned
 end
 
 -- Function to process a single file
@@ -30,8 +35,18 @@ local function process_file(file, output)
     vim.notify("File exists check: " .. tostring(exists) .. " for " .. absolute_path, vim.log.levels.DEBUG)
     
     if not exists then
-        vim.notify("File does not exist or is not accessible: " .. absolute_path, vim.log.levels.DEBUG)
-        return
+        -- Fallback: Try constructing absolute path directly from cwd
+        local fallback_path = vim.fn.getcwd() .. "/" .. cleaned_path
+        vim.notify("Trying fallback path: " .. fallback_path, vim.log.levels.DEBUG)
+        path = Path:new(fallback_path)
+        exists = path:exists()
+        vim.notify("Fallback exists check: " .. tostring(exists) .. " for " .. fallback_path, vim.log.levels.DEBUG)
+        if not exists then
+            vim.notify("File does not exist or is not accessible: " .. absolute_path .. " or " .. fallback_path, vim.log.levels.DEBUG)
+            return
+        end
+        absolute_path = fallback_path
+        relative_path = cleaned_path
     end
     
     local content = path:read()
