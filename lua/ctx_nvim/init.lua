@@ -4,18 +4,33 @@ local M = {}
 local has_fzf, fzf = pcall(require, 'fzf-lua')
 local has_plenary, plenary = pcall(require, 'plenary')
 
+-- Function to clean file path (remove special characters like )
+local function clean_path(path)
+    -- Remove special characters and trim whitespace
+    return path:gsub("[^%w%/%-%.%_]", ""):gsub("^%s+", ""):gsub("%s+$", "")
+end
+
 -- Function to process a single file
 local function process_file(file, output)
     local Path = require('plenary.path')
-    local normalized_path = Path:new(file):normalize(vim.fn.getcwd())
+    -- Clean the file path to remove special characters
+    local cleaned_path = clean_path(file)
+    vim.notify("Cleaned path: " .. cleaned_path, vim.log.levels.DEBUG)
+    
+    -- Normalize the path relative to cwd
+    local normalized_path = Path:new(cleaned_path):normalize(vim.fn.getcwd())
     local relative_path = normalized_path:sub(#vim.fn.getcwd() + 2)
-    vim.notify("Processing file: " .. normalized_path, vim.log.levels.DEBUG)
+    vim.notify("Processing file: " .. normalized_path .. " (relative: " .. relative_path .. ")", vim.log.levels.DEBUG)
 
     local path = Path:new(normalized_path)
-    if not path:exists() then
+    local exists = path:exists()
+    vim.notify("File exists check: " .. tostring(exists) .. " for " .. normalized_path, vim.log.levels.DEBUG)
+    
+    if not exists then
         vim.notify("File does not exist or is not accessible: " .. normalized_path, vim.log.levels.DEBUG)
         return
     end
+    
     local content = path:read()
     if content then
         table.insert(output, string.format("=== Content from: %s ===", relative_path))
