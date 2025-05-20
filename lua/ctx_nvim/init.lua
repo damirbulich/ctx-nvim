@@ -61,26 +61,6 @@ local function process_file(file, output)
     end
 end
 
--- Function to process files in a directory
-local function process_directory(dir, output)
-    local Path = require('plenary.path')
-    local scandir = require('plenary.scandir')
-
-    local files = scandir.scan_dir(dir, { hidden = false, add_dirs = false })
-    vim.notify("Scanning directory: " .. dir .. " (" .. #files .. " files found)", vim.log.levels.DEBUG)
-
-    for _, file in ipairs(files) do
-        local relative_path = file:sub(#dir + 2) -- Remove dir prefix
-        if is_text_file(file) then
-            table.insert(output, string.format("=== Content from: %s ===", relative_path))
-            local content = Path:new(file):read()
-            table.insert(output, content)
-            table.insert(output, "\n")
-            vim.notify("Processed file: " .. relative_path, vim.log.levels.DEBUG)
-        end
-    end
-end
-
 -- Function to copy to clipboard
 local function copy_to_clipboard(content)
     local clipboard_cmd = nil
@@ -103,7 +83,7 @@ local function copy_to_clipboard(content)
     end
 end
 
--- Main function to select files and directories and process
+-- Main function to select files and process
 function M.select_and_copy()
     if not has_fzf then
         vim.notify("Error: fzf-lua is not installed. Please install it first.", vim.log.levels.ERROR)
@@ -115,31 +95,26 @@ function M.select_and_copy()
     end
 
     fzf.files({
-        prompt = "Select files or folders to process (TAB to toggle, Enter to confirm)> ",
+        prompt = "Select files to process (TAB to toggle, Enter to confirm)> ",
         cwd = vim.fn.getcwd(),
         file_ignore_patterns = { "%.git/" },
         fzf_opts = {
             ['--multi'] = '',
-            ['--preview'] = '([[ -f {} ]] && (bat --style=numbers --color=always {} || cat {})) || tree -C {} | head -n 20',
+            ['--preview'] = 'bat --style=numbers --color=always {} || cat {}',
             ['--preview-window'] = 'up:40%'
         },
         actions = {
             ['default'] = function(selected)
                 if not selected or #selected == 0 then
-                    vim.notify("No files or folders selected. Exiting.", vim.log.levels.INFO)
+                    vim.notify("No files selected. Exiting.", vim.log.levels.INFO)
                     return
                 end
 
                 local output = {}
-                vim.notify("Selected items:\n" .. table.concat(selected, "\n"), vim.log.levels.INFO)
+                vim.notify("Selected files:\n" .. table.concat(selected, "\n"), vim.log.levels.INFO)
 
-                for _, item in ipairs(selected) do
-                    local stat = plenary.path:new(item):_stat()
-                    if stat.type == 'directory' then
-                        process_directory(item, output)
-                    elseif stat.type == 'file' then
-                        process_file(item, output)
-                    end
+                for _, file in ipairs(selected) do
+                    process_file(file, output)
                 end
 
                 if #output > 0 then
@@ -154,7 +129,8 @@ end
 
 -- Setup function to initialize the plugin
 function M.setup()
-    vim.api.nvim_create_user_command('Ctx', M.select_and_copy, { desc = "Select files/directories and copy text content to clipboard" })
+    vim.api.nvim_create_user_command('Ctx', M.select_and_copy, { desc = "Select files and copy text content to clipboard" })
+    vim.notify("Ctx: Command registered", vim.log.levels.INFO)
 end
 
 return M
