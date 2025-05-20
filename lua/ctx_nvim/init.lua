@@ -17,17 +17,20 @@ local function process_file(file, output)
     local cleaned_path = clean_path(file)
     vim.notify("Cleaned path: " .. cleaned_path, vim.log.levels.DEBUG)
     
-    -- Normalize the path relative to cwd
-    local normalized_path = Path:new(cleaned_path):normalize(vim.fn.getcwd())
-    local relative_path = normalized_path:sub(#vim.fn.getcwd() + 2)
-    vim.notify("Processing file: " .. normalized_path .. " (relative: " .. relative_path .. ")", vim.log.levels.DEBUG)
+    -- Convert to absolute path
+    local absolute_path = vim.fn.fnamemodify(cleaned_path, ':p')
+    vim.notify("Absolute path: " .. absolute_path, vim.log.levels.DEBUG)
+    
+    -- Compute relative path for output
+    local relative_path = absolute_path:sub(#vim.fn.getcwd() + 2)
+    vim.notify("Processing file: " .. absolute_path .. " (relative: " .. relative_path .. ")", vim.log.levels.DEBUG)
 
-    local path = Path:new(normalized_path)
+    local path = Path:new(absolute_path)
     local exists = path:exists()
-    vim.notify("File exists check: " .. tostring(exists) .. " for " .. normalized_path, vim.log.levels.DEBUG)
+    vim.notify("File exists check: " .. tostring(exists) .. " for " .. absolute_path, vim.log.levels.DEBUG)
     
     if not exists then
-        vim.notify("File does not exist or is not accessible: " .. normalized_path, vim.log.levels.DEBUG)
+        vim.notify("File does not exist or is not accessible: " .. absolute_path, vim.log.levels.DEBUG)
         return
     end
     
@@ -38,7 +41,7 @@ local function process_file(file, output)
         table.insert(output, "\n")
         vim.notify("Successfully processed file: " .. relative_path, vim.log.levels.DEBUG)
     else
-        vim.notify("Failed to read content of file: " .. normalized_path, vim.log.levels.DEBUG)
+        vim.notify("Failed to read content of file: " .. absolute_path, vim.log.levels.DEBUG)
     end
 end
 
