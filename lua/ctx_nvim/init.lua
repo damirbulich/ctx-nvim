@@ -23,19 +23,15 @@ local function process_file(file, output)
     local Path = require('plenary.path')
     -- Clean the file path
     local cleaned_path = clean_path(file)
-    vim.notify("Cleaned path: " .. cleaned_path, vim.log.levels.DEBUG)
     
     -- Convert to absolute path
     local absolute_path = vim.fn.fnamemodify(cleaned_path, ':p')
-    vim.notify("Absolute path: " .. absolute_path, vim.log.levels.DEBUG)
     
     -- Compute relative path for output
     local relative_path = absolute_path:sub(#vim.fn.getcwd() + 2)
-    vim.notify("Processing file: " .. absolute_path .. " (relative: " .. relative_path .. ")", vim.log.levels.DEBUG)
 
     local path = Path:new(absolute_path)
     local exists = path:exists()
-    vim.notify("File exists check: " .. tostring(exists) .. " for " .. absolute_path, vim.log.levels.DEBUG)
     
     if not exists then
         vim.notify("File does not exist or is not accessible: " .. absolute_path, vim.log.levels.DEBUG)
@@ -47,7 +43,6 @@ local function process_file(file, output)
         table.insert(output, string.format("=== Content from: %s ===", relative_path))
         table.insert(output, content)
         table.insert(output, "\n")
-        vim.notify("Successfully processed file: " .. relative_path, vim.log.levels.DEBUG)
     else
         vim.notify("Failed to read content of file: " .. absolute_path, vim.log.levels.DEBUG)
     end
@@ -86,7 +81,6 @@ function M.select_and_copy()
         return
     end
 
-    vim.notify("ctx-nvim version: " .. PLUGIN_VERSION, vim.log.levels.INFO)
     fzf.files({
         prompt = "Select files to process (TAB to toggle, Enter to confirm)> ",
         cwd = vim.fn.getcwd(),
@@ -123,7 +117,6 @@ end
 -- Setup function to initialize the plugin
 function M.setup()
     vim.api.nvim_create_user_command('Ctx', M.select_and_copy, { desc = "Select files and copy text content to clipboard" })
-    vim.notify("Ctx: Command registered (version " .. PLUGIN_VERSION .. ")", vim.log.levels.INFO)
 end
 
 return M
