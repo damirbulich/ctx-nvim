@@ -1,50 +1,74 @@
-Ctx_nvim
-A Neovim plugin to select directories using fzf-lua, extract text from files, and copy the content to the clipboard.
-Features
+# Ctx_nvim
 
-Select multiple directories using fzf-lua with a preview window.
-Process text files, skipping common non-text extensions (e.g., .png, .pdf, .zip).
-Copy file contents with relative paths as headers to the clipboard.
-Fallback to displaying content in a new Neovim buffer if no clipboard tool is found.
-Uses plenary.nvim for file operations and fzf-lua for directory selection.
+A Neovim plugin to select directories using `fzf-lua`, extract text from files, and copy the content to the clipboard.
 
-Requirements
+## Features
 
-Neovim 0.7.0 or higher
-fzf-lua
-plenary.nvim
-fzf installed on your system (for preview functionality)
-A clipboard tool (xclip, wl-copy, or pbcopy)
+- **Directory Selection**: Select multiple directories using `fzf-lua` with a preview window for easy navigation.
+- **Text File Processing**: Process text files while skipping common non-text extensions (e.g., `.png`, `.pdf`, `.zip`).
+- **Clipboard Integration**: Copy file contents with relative paths as headers to the system clipboard.
+- **Fallback Display**: If no clipboard tool is found, display content in a new Neovim buffer.
+- **Dependencies**: Utilizes `plenary.nvim` for file operations and `fzf-lua` for directory selection.
 
-Installation
-Using lazy.nvim
-Add the following to your lazy.nvim configuration:
+## Requirements
+
+- Neovim 0.7.0 or higher
+- `fzf-lua`
+- `plenary.nvim`
+- `fzf` installed on your system (required for preview functionality)
+- A clipboard tool (`xclip`, `wl-copy`, or `pbcopy`)
+
+## Installation
+
+### Using lazy.nvim
+
+Add the following to your `lazy.nvim` configuration:
+
+```lua
 {
-  "your-username/fzf-dir-copy",
-  dependencies = {
-    "ibhagwan/fzf-lua",
-    "nvim-lua/plenary.nvim",
-  },
+    {
+        "damirbulich/ctx-nvim",
+        dependencies = {
+            "ibhagwan/fzf-lua",
+            "nvim-lua/plenary.nvim",
+        },
+        config = function()
+            require("ctx_nvim").setup()
+            vim.keymap.set("n", "<C-g>", ":Ctx<Return>", {})
+        end,
+    },
 }
+```
 
-Replace your-username/fzf-dir-copy with the actual repository path (e.g., github.com/your-username/fzf-dir-copy).
-Manual Installation
+Replace `your-username/fzf-dir-copy` with the actual repository path (e.g., `github.com/your-username/fzf-dir-copy`).
 
-Clone the repository into ~/.config/nvim/pack/plugins/start/:git clone https://github.com/your-username/fzf-dir-copy.git ~/.config/nvim/pack/plugins/start/fzf-dir-copy
+### Manual Installation
 
+1. Clone the repository into `~/.config/nvim/pack/plugins/start/`:
 
-Ensure fzf-lua and plenary.nvim are installed.
+   ```bash
+   git clone https://github.com/your-username/fzf-dir-copy.git ~/.config/nvim/pack/plugins/start/fzf-dir-copy
+   ```
 
-Usage
+2. Ensure `fzf-lua` and `plenary.nvim` are installed.
+
+## Usage
+
 Run the following command in Neovim:
-:FzfDirCopy
 
-This opens an fzf-lua interface to select directories. Use TAB to toggle selection, and Enter to confirm. The plugin will:
+```
+:Ctx
+```
 
-Process text files in the selected directories.
-Copy their contents (with relative paths as headers) to the clipboard.
-Display a notification with the number of lines copied or open a new buffer if no clipboard tool is available.
+This opens an `fzf-lua` interface to select directories. Usage steps:
 
-License
+1. Use `TAB` to toggle directory selection.
+2. Press `Enter` to confirm your selection.
+3. The plugin will:
+   - Process text files in the selected directories.
+   - Copy their contents (with relative paths as headers) to the clipboard.
+   - Display a notification with the number of lines copied or open a new buffer if no clipboard tool is available.
+
+## License
+
 MIT License
-
