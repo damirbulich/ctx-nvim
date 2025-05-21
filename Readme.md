@@ -26,17 +26,15 @@ Add the following to your `lazy.nvim` configuration:
 
 ```lua
 {
-    {
-        "damirbulich/ctx-nvim",
-        dependencies = {
-            "ibhagwan/fzf-lua",
-            "nvim-lua/plenary.nvim",
-        },
-        config = function()
-            require("ctx_nvim").setup()
-            vim.keymap.set("n", "<C-g>", ":Ctx<Return>", {})
-        end,
+    "damirbulich/ctx-nvim",
+    dependencies = {
+        "ibhagwan/fzf-lua",
+        "nvim-lua/plenary.nvim",
     },
+    config = function()
+        require("ctx_nvim").setup()
+        vim.keymap.set("n", "<C-g>", ":Ctx<Return>", {})
+    end,
 }
 ```
 
