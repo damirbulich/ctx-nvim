@@ -1,6 +1,6 @@
 # Ctx_nvim
 
-A Neovim plugin to select directories using `fzf-lua`, extract text from files, and copy the content to the clipboard.
+A Neovim plugin to select files using `fzf-lua`, extract text from them, and copy the content to the clipboard.
 
 ## Features
 
