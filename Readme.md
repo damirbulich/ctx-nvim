@@ -33,7 +33,7 @@ Add the following to your `lazy.nvim` configuration:
     },
     config = function()
         require("ctx_nvim").setup()
-        vim.keymap.set("n", "<C-g>", ":Ctx<Return>", {})
+        vim.keymap.set("n", "<C-g>", ":Ctx<CR>", {}) -- add custom keybinding
     end,
 }
 ```
